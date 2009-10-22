@@ -1,6 +1,6 @@
-from hashlib import sha1
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils.hashcompat import sha_constructor as sha1
 from django.utils import simplejson as json
 
 class LayarException(Exception):
@@ -20,7 +20,7 @@ class POI(object):
         self.line2 = line2          # recommended max len 35
         self.line3 = line3
         self.line4 = line4
-        self.type = type
+        self.type = type            # must be 0..3
         self.attribution = attribution  # recommended max len 45
         self.actions = actions
 
@@ -45,6 +45,7 @@ class LayarView(object):
 
     results_per_page = 15
     max_results = 50
+    verify_hash = True
 
     def __init__(self):
         self.developer_key = settings.LAYAR_DEVELOPER_KEY
@@ -64,18 +65,16 @@ class LayarView(object):
         slider = request.GET.get('CUSTOM_SLIDER')
         page = int(request.GET.get('pageKey', 0))
 
-        # oauth: oauth_consumer_key, oauth_signature_method, oauth_timestamp,
-        #   oauth_nonce, oauth_version, oauth_signature
-
         layar_response = dict(hotspots=[], layer=layer_name, errorCode=0,
-                              errorString='ok', nextPageKey=None, morePages=False)
+                          errorString='ok', nextPageKey=None, morePages=False)
 
         try:
 
             # verify hash
-            key = self.developer_key + timestamp
-            if sha1(key).hexdigest() != developer_hash:
-                raise LayarException(20, 'Bad developerHash')
+            if self.verify_hash:
+                key = self.developer_key + timestamp
+                if sha1(key).hexdigest() != developer_hash:
+                    raise LayarException(20, 'Bad developerHash')
 
             # get ``max_results`` items from queryset
             try:
@@ -113,4 +112,5 @@ class LayarView(object):
             layar_response['errorString'] = e.message
 
         content = json.dumps(layar_response)
-        return HttpResponse(content, content_type='application/javascript; charset=utf-8')
+        return HttpResponse(content,
+                content_type='application/javascript; charset=utf-8')
