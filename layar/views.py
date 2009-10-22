@@ -55,14 +55,14 @@ class LayarView(object):
         developer_hash = request.GET['developerHash']
         timestamp = request.GET['timestamp']
         layer_name = request.GET['layerName']
-        latitude = request.GET['lat']
-        longitude = request.GET['lon']
-        accuracy = request.GET['accuracy']
-        radius = request.GET['radius']
+        lat = float(request.GET['lat'])
+        lon = float(request.GET['lon'])
+        accuracy = int(request.GET['accuracy'])
+        radius = int(request.GET['radius'])
         radio_option = request.GET.get('RADIOLIST')
-        search_query = request.GET.get('SEARCHBOX')
-        custom_slider = request.GET.get('CUSTOM_SLIDER')
-        page_key = request.GET.get('pageKey')
+        search = request.GET.get('SEARCHBOX')
+        slider = request.GET.get('CUSTOM_SLIDER')
+        page = int(request.GET.get('pageKey', 0))
 
         # oauth: oauth_consumer_key, oauth_signature_method, oauth_timestamp,
         #   oauth_nonce, oauth_version, oauth_signature
@@ -77,20 +77,35 @@ class LayarView(object):
             if sha1(key).hexdigest() != developer_hash:
                 raise LayarException(20, 'Bad developerHash')
 
+            # get ``max_results`` items from queryset
             try:
-                poi_func = getattr(self, 'get_%s_pois' % layer_name)
+                qs_func = getattr(self, 'get_%s_queryset' % layer_name)
             except AttributeError:
                 raise LayarException(21, 'no such layer: %s' % layer_name)
 
-            pois = poi_func(latitude=latitude, longitude=longitude, radius=radius,
-                            start_index=0,
-                            radio_option=radio_option, search_query=search_query,
-                            custom_slider=custom_slider)
+            qs = qs_func(latitude=lat, longitude=lon, radius=radius,
+                         radio_option=radio_option, search_query=search,
+                         slider_value=slider)[:self.max_results]
 
-            # pagination logic
-            if len(pois) > self.max_results:
-                pois = pois[:self.max_results]
+            # do pagination if results_per_page is set
+            if self.results_per_page:
+                start_index = self.results_per_page * page
+                end_index = start_index + self.results_per_page
 
+                # if there are more pages, indicate that in response
+                if end_index < qs.count()-1:
+                    layar_response['morePages'] = True
+                    layar_response['nextPageKey'] = str(page+1)
+
+                qs = qs[start_index:end_index]
+
+            # convert queryset into POIs
+            try:
+                poi_func = getattr(self, 'poi_from_%s_item' % layer_name)
+            except AttributeError:
+                raise LayarException(21, 'no such layer: %s' % layer_name)
+
+            pois = [poi_func(item) for item in qs]
             layar_response['hotspots'] = [poi.to_dict() for poi in pois]
 
         except LayarException, e:
