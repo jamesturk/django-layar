@@ -10,6 +10,7 @@ django-layar is a project of Sunlight Labs (c) 2009.
 Written by James Turk <jturk@sunlightfoundation.com>
 
 Source: http://github.com/sunlightlabs/django-layar/
+
 Documentation: http://packages.python.org/django-layar/README.html
 
 Requirements
