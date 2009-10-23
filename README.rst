@@ -10,6 +10,7 @@ django-layar is a project of Sunlight Labs (c) 2009.
 Written by James Turk <jturk@sunlightfoundation.com>
 
 Source: http://github.com/sunlightlabs/django-layar/
+Documentation: http://packages.python.org/django-layar/README.html
 
 Requirements
 ============
@@ -90,11 +91,3 @@ In urls.py it is then necessary to map a URL directly to ``busstop_layar``::
 Additional Settings
 -------------------
 
-Your :class:`LayarView`-derived class can also set a number of options.  These options should be suitable for most purposes as Layar doesn't display more than 50 points, but are available should you for any reason need to change them.
-
-``results_per_page``
-    controls the number of results returned at once (default: 15)
-``max_results``
-    controls the maximum number of results across all pages (default: 50)
-``verify_hash``
-    set to False to disable hash verification (useful for testing, shouldn't be False in production)
