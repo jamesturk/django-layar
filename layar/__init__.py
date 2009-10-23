@@ -1,14 +1,46 @@
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.hashcompat import sha_constructor as sha1
 from django.utils import simplejson as json
 
 class LayarException(Exception):
+    ''' Layar exception - takes a code (20-29) to return to Layar'''
     def __init__(self, code, message):
         self.code = code
         self.message = message
 
 class POI(object):
+    '''
+        Object representing Layar Points of Interest
+
+        Layar has some specific requirements (eg. that lat/longs are converted
+        to fixed point) that are taken care of when converting these objects
+        to JSON.  String lengths mentioned below are recommended, strings will
+        not be truncated on the server.
+
+        Required fields:
+            ``id``
+                unique id for this POI
+            ``lat``
+                latitude of POI
+            ``lon``
+                longitude of POI
+            ``title``
+                Name of POI, displayed in large font. (<= 60 chars)
+
+        Optional fields:
+            ``imageURL``
+                image to display when POI is selected
+            ``line2, line3, line4``
+                additional lines of detail (use special token %distance% to
+                display distance to POI) (<= 35 chars)
+            ``type``
+                numerical type (0-3), can set meaning when publishing Layar
+            ``attribution``
+                bottom line of display, shown in small font (<= 45 chars)
+            ``actions``
+                dictionary mapping names of actions to URIs
+        '''
 
     def __init__(self, id, lat, lon, title, actions=None, image_url=None,
                  line2=None, line3=None, line4=None, type=0, attribution=None):
@@ -42,6 +74,26 @@ class POI(object):
         return d
 
 class LayarView(object):
+    '''
+        Class-based generic view for creating a Layar endpoint.
+
+        To add a layar it is necessary to write two functions:
+            ``get_LAYERNAME_queryset``
+                return a queryset of objects to be used to build the layer
+            ``poi_from_LAYERNAME_item``
+                convert an item of whatever type is returned by
+                get_LAYARNAME_queryset into a ``POI`` object
+
+        This separation allows LayarView to handle pagination correctly.
+
+        Options:
+            ``results_per_page``
+                defaults to the Layar-recommended 15
+            ``max_results``
+                defaults to the Layar-recommended 50
+            ``verify_hash``
+                set to False to disable hash verification (useful for testing)
+    '''
 
     results_per_page = 15
     max_results = 50
@@ -51,19 +103,22 @@ class LayarView(object):
         self.developer_key = settings.LAYAR_DEVELOPER_KEY
 
     def __call__(self, request):
-        user_id = request.GET['userId']
-        developer_id = request.GET['developerId']
-        developer_hash = request.GET['developerHash']
-        timestamp = request.GET['timestamp']
-        layer_name = request.GET['layerName']
-        lat = float(request.GET['lat'])
-        lon = float(request.GET['lon'])
-        accuracy = int(request.GET['accuracy'])
-        radius = int(request.GET['radius'])
-        radio_option = request.GET.get('RADIOLIST')
-        search = request.GET.get('SEARCHBOX')
-        slider = request.GET.get('CUSTOM_SLIDER')
-        page = int(request.GET.get('pageKey', 0))
+        try:
+            user_id = request.GET['userId']
+            developer_id = request.GET['developerId']
+            developer_hash = request.GET['developerHash']
+            timestamp = request.GET['timestamp']
+            layer_name = request.GET['layerName']
+            lat = float(request.GET['lat'])
+            lon = float(request.GET['lon'])
+            accuracy = int(request.GET['accuracy'])
+            radius = int(request.GET['radius'])
+            radio_option = request.GET.get('RADIOLIST')
+            search = request.GET.get('SEARCHBOX')
+            slider = request.GET.get('CUSTOM_SLIDER')
+            page = int(request.GET.get('pageKey', 0))
+        except KeyError, e:
+            return HttpResponseBadRequest('missing required parameter: %s' % e)
 
         layar_response = dict(hotspots=[], layer=layer_name, errorCode=0,
                           errorString='ok', nextPageKey=None, morePages=False)
