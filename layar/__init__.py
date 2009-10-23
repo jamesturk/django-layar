@@ -79,20 +79,31 @@ class LayarView(object):
 
         To add a layar it is necessary to write two functions:
             ``get_LAYERNAME_queryset``
-                return a queryset of objects to be used to build the layer
-            ``poi_from_LAYERNAME_item``
-                convert an item of whatever type is returned by
-                get_LAYARNAME_queryset into a ``POI`` object
+                This function is passed latitude, longitude, radius,
+                radio_option, search_query, and slider_value parameters.
+
+                radio_option, search_query, and slider_value may be None
+                depending on how you've configured your widgets on layar.com
+
+                **Note:** It is strongly recommended that you make this function
+                accept **kwargs for maximum compatibility
+
+            ``poi_from_LAYERNAME_item(item)``
+                convert an item of whatever type is returned by 
+                :func:`get_LAYARNAME_queryset` into a ``POI`` object
 
         This separation allows LayarView to handle pagination correctly.
 
-        Options:
-            ``results_per_page``
-                defaults to the Layar-recommended 15
-            ``max_results``
-                defaults to the Layar-recommended 50
-            ``verify_hash``
-                set to False to disable hash verification (useful for testing)
+        Your derived class can also set a number of options.  The defaults
+        should be suitable for most purposes as Layar doesn't display more
+        than 50 points.
+
+        ``results_per_page``
+            controls the number of results returned at once (default: 15)
+        ``max_results``
+            controls the maximum number of results across all pages (default: 50)
+        ``verify_hash``
+            set to False to disable hash verification (useful for testing)
     '''
 
     results_per_page = 15
