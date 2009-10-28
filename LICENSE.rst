@@ -1,3 +1,6 @@
+License
+=======
+
 Copyright (c) 2009, Sunlight Foundation
 All rights reserved.
 

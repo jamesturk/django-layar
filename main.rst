@@ -89,6 +89,3 @@ In urls.py it is then necessary to map a URL directly to ``busstop_layar``::
         url(r'^layar_endpoint/$', 'myapp.views.busstop_layar'),
     )
 
-Additional Settings
--------------------
-

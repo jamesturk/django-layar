@@ -10,8 +10,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   README
+   main
    layar-autodoc
+   CHANGELOG
+   LICENSE
 
 Indices and tables
 ==================
