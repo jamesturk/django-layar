@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-long_description = open('README.rst').read()
+long_description = open('README').read()
 
 setup(
     name='django-layar',
