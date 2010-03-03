@@ -66,8 +66,11 @@ class POI(object):
             d['lon'] = int(self.lon*1000000)
 
         # convert actions dictionary into expected format
-        if self.actions:
+        if isinstance(self.actions, dict):
+            raise DeprecationWarning('passing a dictionary for actions is deprecated - order will be lost')
             d['actions'] = [{'label':k, 'uri':v} for k,v in self.actions.iteritems()]
+        elif isinstance(self.actions, list):
+            pass
         else:
             d['actions'] = []
 
