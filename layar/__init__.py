@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.hashcompat import sha_constructor as sha1
@@ -60,9 +61,9 @@ class POI(object):
         d = dict(self.__dict__)
 
         # do lat/long conversion
-        if isinstance(self.lat, float):
+        if isinstance(self.lat, (float, Decimal)):
             d['lat'] = int(self.lat*1000000)
-        if isinstance(self.lon, float):
+        if isinstance(self.lon, (float, Decimal)):
             d['lon'] = int(self.lon*1000000)
 
         # convert actions dictionary into expected format
