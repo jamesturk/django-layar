@@ -4,7 +4,7 @@ long_description = open('README').read()
 
 setup(
     name='django-layar',
-    version="0.1.0",
+    version="0.2.0",
     package_dir={'layar': 'layar'},
     packages=['layar'],
     description='helper for publishing data to Layar augmented reality browser from Django',

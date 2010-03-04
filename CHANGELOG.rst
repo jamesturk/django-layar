@@ -2,6 +2,12 @@
 Changelog
 =========
 
+0.2.0
+================
+    - add custom radius handling
+    - made accuracy and radius optional
+    - new parameters: alt, search2/3, slider2/3, checkboxes
+
 0.1.1 - March 4 2009
 ====================
     - fix packaging issues
