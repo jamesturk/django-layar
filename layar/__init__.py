@@ -36,15 +36,28 @@ class POI(object):
                 additional lines of detail (use special token %distance% to
                 display distance to POI) (<= 35 chars)
             ``type``
-                numerical type (0-3), can set meaning when publishing Layar
+                numerical type, can set meaning when publishing Layar
             ``attribution``
                 bottom line of display, shown in small font (<= 45 chars)
+            ``dimension``
+                changes how POI is displayed (defaults to 1)
+                    1 - point marker (default)
+                    2 - image used for POI
+                    3 - 3d object used for POI
+            ``alt``
+                Real altitude of object in meters.
+            ``relative_alt``
+                Relative altitude (in meters) of object with respect to user.
             ``actions``
-                list of dictionaries with 'label' and 'uri' keys
+                list of dictionaries with ``label`` and ``uri`` keys
+                as of Layar v3 the dictionaries may optionally include
+                ``autoTriggerOnly`` and ``autoTriggerOnly``
         '''
 
     def __init__(self, id, lat, lon, title, actions=None, image_url=None,
-                 line2=None, line3=None, line4=None, type=0, attribution=None):
+                 line2=None, line3=None, line4=None, type=0, attribution=None,
+                 dimension=1, alt=None, transform=None, object_detail=None,
+                 relative_alt=None):
         self.id = str(id)
         self.lat = lat
         self.lon = lon
@@ -53,12 +66,23 @@ class POI(object):
         self.line2 = line2          # recommended max len 35
         self.line3 = line3
         self.line4 = line4
-        self.type = type            # must be 0..3
+        self.type = type
         self.attribution = attribution  # recommended max len 45
+        self.dimension = dimension
+        self.alt = alt
+        self.transform = transform
+        self.object = object_detail
+        self.relativeAlt = relative_alt
         self.actions = actions
 
     def to_dict(self):
         d = dict(self.__dict__)
+
+        # don't include optional attributes if not set
+        remove_if_none = ('alt', 'transform', 'object', 'relativeAlt')
+        for k in remove_if_none:
+            if not d[k]:
+                del d[k]
 
         # do lat/long conversion
         if isinstance(self.lat, (float, Decimal)):
