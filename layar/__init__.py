@@ -112,6 +112,7 @@ class LayarView(object):
 
     results_per_page = 15
     max_results = 50
+    custom_radius = 1000
     verify_hash = True
 
     def __init__(self):
@@ -119,6 +120,9 @@ class LayarView(object):
 
     def __call__(self, request):
         try:
+            # parameters from http://layar.pbworks.com/GetPointsOfInterest
+
+            # required parameters
             user_id = request.GET['userId']
             developer_id = request.GET['developerId']
             developer_hash = request.GET['developerHash']
@@ -126,12 +130,31 @@ class LayarView(object):
             layer_name = request.GET['layerName']
             lat = float(request.GET['lat'])
             lon = float(request.GET['lon'])
-            accuracy = int(request.GET['accuracy'])
-            radius = int(request.GET['radius'])
+
+            # optional
+            accuracy = request.GET.get('accuracy')
+            if accuracy:
+                accuracy = int(accuracy)
+            radius = request.GET.get('radius')
+            if radius:
+                radius = int(radius)
+            alt = request.GET.get('alt')
+            if alt:
+                alt = int(alt)
+            page = int(request.GET.get('pageKey', 0))
+
+            # user defined UI elements
             radio_option = request.GET.get('RADIOLIST')
             search = request.GET.get('SEARCHBOX')
+            search2 = request.GET.get('SEARCHBOX_2')
+            search3 = request.GET.get('SEARCHBOX_3')
             slider = request.GET.get('CUSTOM_SLIDER')
-            page = int(request.GET.get('pageKey', 0))
+            slider2 = request.GET.get('CUSTOM_SLIDER_2')
+            slider3 = request.GET.get('CUSTOM_SLIDER_3')
+            checkboxes = request.GET.get('CHECKBOXLIST')
+            if checkboxes:
+                checkboxes = checkboxes.split(',')
+
         except KeyError, e:
             return HttpResponseBadRequest('missing required parameter: %s' % e)
 
@@ -154,7 +177,10 @@ class LayarView(object):
 
             qs = qs_func(latitude=lat, longitude=lon, radius=radius,
                          radio_option=radio_option, search_query=search,
-                         slider_value=slider)[:self.max_results]
+                         search_query2=search2, search_query3=search3,
+                         slider_value=slider, slider_value2=slider2,
+                         slider_value3=slider3, checkboxes=checkboxes)
+            qs = qs[:self.max_results]
 
             # do pagination if results_per_page is set
             if self.results_per_page:
@@ -176,6 +202,10 @@ class LayarView(object):
 
             pois = [poi_func(item) for item in qs]
             layar_response['hotspots'] = [poi.to_dict() for poi in pois]
+
+            # if radius wasn't sent pass back the radius used
+            if not radius:
+                layar_response['radius'] = self.custom_radius
 
         except LayarException, e:
             layar_response['errorCode'] = e.code
