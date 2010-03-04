@@ -40,7 +40,7 @@ class POI(object):
             ``attribution``
                 bottom line of display, shown in small font (<= 45 chars)
             ``actions``
-                dictionary mapping names of actions to URIs
+                list of dictionaries with 'label' and 'uri' keys
         '''
 
     def __init__(self, id, lat, lon, title, actions=None, image_url=None,
