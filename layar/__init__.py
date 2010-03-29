@@ -132,11 +132,13 @@ class LayarView(object):
             controls the maximum number of results across all pages (default: 50)
         ``verify_hash``
             set to False to disable hash verification (useful for testing)
+        ``default_radius``
+            radius to use if a radius is not passed
     '''
 
     results_per_page = 15
     max_results = 50
-    custom_radius = 1000
+    default_radius = 1000
     verify_hash = True
 
     def __init__(self):
@@ -229,7 +231,7 @@ class LayarView(object):
 
             # if radius wasn't sent pass back the radius used
             if not radius:
-                layar_response['radius'] = self.custom_radius
+                layar_response['radius'] = self.default_radius
 
         except LayarException, e:
             layar_response['errorCode'] = e.code
