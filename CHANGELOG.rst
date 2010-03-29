@@ -2,13 +2,13 @@
 Changelog
 =========
 
-0.2.0
-================
-    - add custom radius handling
+0.2.0 - March 29 2010
+=====================
+    - new Layar3 parameters: alt, search2/3, slider2/3, checkboxes
     - made accuracy and radius optional
-    - new parameters: alt, search2/3, slider2/3, checkboxes
+    - add default radius handling
 
-0.1.1 - March 4 2009
+0.1.1 - March 4 2010
 ====================
     - fix packaging issues
     - lat/lng conversion on Decimal objects
